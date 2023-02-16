@@ -7,8 +7,6 @@ let Band = sequelize.define("Band", {
     genre: DataTypes.STRING
 });
 
-let band1 = Band.create({name: "JsSeq", genre: "Heavy Metal"})
-
 module.exports = {
     Band
 };
