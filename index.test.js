@@ -4,7 +4,7 @@ describe('Band and Musician Models', () => {
     /**
      * Runs the code prior to all tests
      */
-    beforeAll(async () => {
+    beforeEach(async () => {
         // the 'sync' method will create tables based on the model class
         // by setting 'force:true' the tables are recreated each time the 
         // test suite is run
@@ -62,4 +62,40 @@ describe('Band and Musician Models', () => {
     //     const testSong2Bands = await testSong2.getBands();
     //     expect(testSong2Bands.length).toBe(1);
     // })
+
+    test('Musicians can be eager-loaded with Bands', async () => {
+        await Band.bulkCreate([
+            {name: "Band1", genre: "Genre1"}, 
+            {name: "Band2", genre: "Genre2"},
+            {name: "Band3", genre: "Genre3"},
+            {name: "Band4", genre: "Genre4"},
+            {name: "Band5", genre: "Genre5"}
+        ]);
+        await Musician.bulkCreate([
+            {name: "Musician1", instrument: "Instrument1"}, 
+            {name: "Musician2", instrument: "Instrument2"},
+            {name: "Musician3", instrument: "Instrument3"},
+            {name: "Musician4", instrument: "Instrument4"},
+            {name: "Musician5", instrument: "Instrument5"}
+        ]);
+        
+        let band1 = await Band.findByPk(1);
+        let musician1 = await Musician.findByPk(1);
+        let musician2 = await Musician.findByPk(2);
+        let musician3 = await Musician.findByPk(3);
+        let musician4 = await Musician.findByPk(4);
+
+        await band1.addMusicians([musician1, musician2, musician3, musician4]);
+        
+        const wholeBandWithMusicians = await Band.findAll({
+          include: [{
+            model: Musician, as: "Musicians"
+          }]
+        });
+
+        expect(wholeBandWithMusicians[0].Musicians.length).toBe(4);
+        expect(wholeBandWithMusicians[0].Musicians[0].name).toBe("Musician1");
+        expect(wholeBandWithMusicians[0].Musicians[2].instrument).toBe("Instrument3");
+        expect(wholeBandWithMusicians[1].Musicians.length).toBe(0);
+    });
 })
